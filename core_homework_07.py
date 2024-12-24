@@ -1,6 +1,7 @@
 from collections import UserDict
 from datetime import datetime, timedelta
 
+
 class Field:
     def __init__(self, value):
         self.value = value
@@ -8,9 +9,11 @@ class Field:
     def __str__(self):
         return str(self.value)
 
+
 class Name(Field): # Class for storing contact name.
     def __init__(self, value):
         super().__init__(value)
+
 
 class Phone(Field): # Class for storing phone numbers.
     def __init__(self, value):
@@ -18,12 +21,15 @@ class Phone(Field): # Class for storing phone numbers.
             super().__init__(value)
         else: raise ValueError 
 
+
 class Birthday(Field):
     def __init__(self, value):
         try:
-            self.value = datetime.strptime(value, "%d.%m.%Y").date()
+            datetime.strptime(value, "%d.%m.%Y")  # Тільки перевірка формату
+            super().__init__(value)
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
+
 
 class Record:
     def __init__(self, name):
@@ -54,7 +60,9 @@ class Record:
         self.birthday = Birthday(birthday)
 
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        birthday = f"birthday: {self.birthday.value}" if self.birthday else ""
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, {birthday}"
+
 
 class AddressBook(UserDict):
     def add_record(self, record): # Method that adds a record to "self.data".
@@ -72,21 +80,23 @@ class AddressBook(UserDict):
         today = datetime.today().date()
 
         for record in self.data.values():
-            birthday_date = record.birthday.value
-            birthday_this_year = birthday_date.replace(year=today.year)
+            if record.birthday:
+                birthday_date = datetime.strptime(record.birthday.value, "%d.%m.%Y").date()
+                birthday_this_year = birthday_date.replace(year=today.year)
 
-            if birthday_this_year < today:
-                birthday_this_year = birthday_date.replace(year=today.year+1)
+                if birthday_this_year < today:
+                    birthday_this_year = birthday_date.replace(year=today.year+1)
 
-            if 0 <= (birthday_this_year - today).days <= 7:
-                congratulation_date = birthday_this_year
-                if congratulation_date.weekday() >= 5:
-                    congratulation_date += timedelta(days=(7 - congratulation_date.weekday()))
-                upcoming_birthdays.append({"name": record.name.value, "birthday": congratulation_date.strftime("%d.%m.%Y")})
+                if 0 <= (birthday_this_year - today).days <= 7:
+                    congratulation_date = birthday_this_year
+                    if congratulation_date.weekday() >= 5:
+                        congratulation_date += timedelta(days=(7 - congratulation_date.weekday()))
+                    upcoming_birthdays.append({"name": record.name.value, "birthday": congratulation_date.strftime("%d.%m.%Y")})
         return upcoming_birthdays
 
     def __str__(self):
         return "\n".join(str(record) for record in self.data.values())
+
 
 def input_error(func):
     def inner(*args, **kwargs):
@@ -134,7 +144,6 @@ def show_phone(args, book):
         phones = "; ".join(phone.value for phone in record.phones)
         return f"{name}'s phones: {phones}" if phones else f"{name} has no phone numbers."
     return "Contact not found."
-
 
 @input_error
 def add_birthday(args, book):
