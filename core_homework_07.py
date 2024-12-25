@@ -60,8 +60,8 @@ class Record:
         self.birthday = Birthday(birthday)
 
     def __str__(self):
-        birthday = f"birthday: {self.birthday.value}" if self.birthday else ""
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, {birthday}"
+        birthday = f", birthday: {self.birthday.value}" if self.birthday else ""
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}{birthday}"
 
 
 class AddressBook(UserDict):
@@ -103,7 +103,7 @@ def input_error(func):
         try:
             return func(*args, **kwargs)
         except ValueError:
-            return "Give me corect date please."
+            return "Give me corect data please."
         except IndexError:
             return "Enter user name please"
         except KeyError:
